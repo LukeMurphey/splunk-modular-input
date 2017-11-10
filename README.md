@@ -59,6 +59,7 @@ Below is an example of a modular input class. This class does the following:
  2. Defines the parameters that the input accepts
  3. Runs the modular input
 
+```python
     import sys
     sys.path.insert(0, 'modular_input.zip')
     from modular_input import Field, ModularInput, URLField
@@ -108,6 +109,7 @@ Below is an example of a modular input class. This class does the following:
                 my_input.logger.exception("Unhandled exception was caught, this may be due to a defect in the script")
             else:
                 raise e
+```
 
 ## Other projects that may be of interest
 
