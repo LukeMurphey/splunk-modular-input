@@ -15,22 +15,7 @@ import json
 from urlparse import urlparse
 from threading import RLock
 
-# Try to load Splunk's libraries. An inability to do so likely means we are running on a universal
-# forwarder (since it doesn't include Python). We will proceed but will be unable to access
-# Splunk's endpoints via simple request which means we will not able to load secure credentials.
-try:
-    from splunk.appserver.mrsparkle.lib.util import make_splunkhome_path
-    from splunk.util import normalizeBoolean as normBool
-    import splunk.rest
-    uf_mode = False
-except:
-    def normBool(value):
-        if str(value).strip().lower() in ['1', 'true']:
-            return True
-        else:
-            return False
-
-    uf_mode = True
+from shortcuts import make_splunkhome_path, UF_MODE, normalizeBoolean
 
 class FieldValidationException(Exception):
     pass
@@ -509,7 +494,7 @@ class FilePathField(Field):
         resolved_path = None
 
         if value is not None:
-            if os.path.isabs(value) or uf_mode:
+            if os.path.isabs(value) or UF_MODE:
                 resolved_path = value
             else:
                 path = os.path.join(make_splunkhome_path([value]))
@@ -917,7 +902,7 @@ class ModularInput():
             setattr(self, arg, self._is_valid_param(arg, scheme_args.get(arg)))
 
         # Convert over the use_single_instance argument to a boolean
-        self.use_single_instance = normBool(self.use_single_instance)
+        self.use_single_instance = normalizeBoolean(self.use_single_instance)
 
         if args is None:
             self.args = []
@@ -1004,7 +989,7 @@ class ModularInput():
         logger.propagate = False
         logger.setLevel(self.logger_level)
 
-        if uf_mode:
+        if UF_MODE:
             file_handler = handlers.RotatingFileHandler(os.path.join(os.environ['SPLUNK_HOME'], 'var', 'log', self.logger_name + '.log'), maxBytes=25000000, backupCount=5)
         else:
             file_handler = handlers.RotatingFileHandler(make_splunkhome_path(['var', 'log', 'splunk', self.logger_name + '.log']), maxBytes=25000000, backupCount=5)
@@ -1041,7 +1026,7 @@ class ModularInput():
         provided, the first entry with the given realm will be returned.
         """
 
-        if uf_mode:
+        if UF_MODE:
             self.logger.warn("Unable to retrieve the secure credential since the input appears " +
                              "to be running in a Univeral Forwarder")
             # Cannot get the secure password in universal forwarder mode since we don't
