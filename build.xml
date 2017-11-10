@@ -1,0 +1,103 @@
+<project default="build" name="modular_input">
+	
+    <!-- ================================= 
+          target: build
+         ================================= -->
+    <target name="build" description="Run user interface tests" depends="populate_export_dir">
+		<!-- Make the directory where we will store the files -->
+        <mkdir dir="${build.packageoutput.directory}" />
+
+		<!-- Resolve the absolute filename -->
+		<property name="absolute_package_file" location="${build.packageoutput.directory}/${build.package.file}"/>
+
+		<!-- Zip up the file -->
+		<zip destfile="${build.packageoutput.directory}/${build.package.file}">
+			<fileset dir="${export_dir}" />
+		</zip>
+
+       	<!-- Delete the temporary location so that old files do not get streamed in -->
+        <delete dir="${export_dir}" />
+        <echo>Modular input build ${build.number} created: ${build.package.file}</echo>
+    </target>
+
+    <!-- ================================= 
+          target: initialize
+         ================================= -->
+    <target name="initialize">
+    	<property file="local.properties" />
+		<property file="default.properties" />
+
+        <!-- Create a temporary directory to send the files to -->
+		<property name="temp.directory" value="${java.io.tmpdir}${user.name}" />
+        <property name="export_dir" value="${temp.directory}${ant.project.name}" />
+    </target>
+
+    <!-- ================================= 
+          target: populate_export_dir
+         ================================= -->
+    <target name="populate_export_dir" depends="initialize,get_build_number">
+    	
+        <!-- Copy the files over that need substitution. -->
+        <copy todir="${export_dir}/${ant.project.name}">
+            <fileset dir="${src.directory}">
+                <include name="info.py" />
+            </fileset>
+            
+            <!-- Perform the substitution of the build information -->
+            <filterset begintoken="${" endtoken="}"> 
+                <filter token="build.number" value="${build.number}" />
+            	<filter token="build.date" value="${build.date}" />
+            	<filter token="version.number" value="${version.number}" />
+            </filterset>
+        </copy>
+
+        <!-- Copy the rest of the files. -->
+         <copy todir="${export_dir}/${ant.project.name}">
+            <fileset dir="${src.directory}">
+                <include name="**.py" />
+				<exclude name="info.py" />
+            </fileset>
+        </copy>
+	</target>
+
+    <!-- ================================= 
+          target: get_build_number
+         ================================= -->
+	<target name="get_build_number" depends="initialize">
+
+		<macrodef name="get_build_info">
+			<attribute name="path" default="${user.dir}" />
+			<attribute name="format" default="ct" />
+			<attribute name="outputproperty" />
+			
+			<sequential>
+			    <exec failonerror="true" executable="git" outputproperty="@{outputproperty}"> <!-- Fail on error is set to true in order to prevent a bad build number from being included -->
+					<arg value="log"/>
+			    	<arg value="-1"/>
+					<arg value="--pretty=format:%@{format}"/>
+			    	<arg value="--abbrev-commit"/>
+					<arg value="@{path}"/>
+			    </exec>
+			</sequential>
+		</macrodef>
+
+		<get_build_info outputproperty="build.number" />
+		<get_build_info format="cD" outputproperty="build.date" />
+		<echo>Revision number is: ${build.number} (${build.date})</echo>
+	</target>
+
+    <!-- ================================= 
+          target: test
+         ================================= -->
+    <target name="test" description="Run unit tests" depends="initialize">
+
+		<!-- Define a default value for the tests to run. Otherwise, arguments passed from the CLI will be used (e.g. ant test.run_unit -Dtest=TestPingParser) -->
+		<property name="test" value="" />
+
+        <exec failonerror="true" executable="python" dir="${test.directory}">
+        	<arg line="unit.py" />
+			<arg line="${test}" />
+        </exec>
+    </target>
+
+</project>
