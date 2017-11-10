@@ -7,7 +7,7 @@ import HTMLTestRunner
 
 sys.path.append(os.path.join("..", "src"))
 
-from shortcuts import UF_MODE, make_splunkhome_path
+from universal_forwarder_compatiblity import UF_MODE, make_splunkhome_path
 
 class TestShortcuts(unittest.TestCase):
     """
