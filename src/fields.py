@@ -141,21 +141,90 @@ class BooleanField(Field):
 class ListField(Field):
     """
     A validator that converts a comma seperated string to an array.
+
+    You can use the instance_class argument to convert individual items in the array to particular
+    type. That way, you can have a list of Python objects that are already converted to the values
+    you want. Consider this example that will include a list of parsed IP network ranges:
+
+        list_field = ListField('name', 'title', 'description', instance_class=IPNetworkField)
+        parsed_ip_ranges = list_field.to_python(u'10.0.0.0/28,1.2.3.4,10.0.1.0/28')
     """
 
-    def to_python(self, value, session_key=None):
+    def __init__(self, name, title, description, none_allowed=False, empty_allowed=True,
+                 required_on_create=None, required_on_edit=None, instance_class=None,
+                 trim_values=False):
+        """
+        Create the field.
 
+        Arguments:
+        name -- Set the name of the field (e.g. "database_server")
+        title -- Set the human readable title (e.g. "Database server")
+        description -- Set the human readable description of the field (e.g. "The IP or domain name
+                       of the database server")
+        none_allowed -- Is a value of none allowed?
+        empty_allowed -- Is an empty string allowed?
+        required_on_create -- Is this field required when creating?
+        required_on_edit -- Is this field required when editing?
+        instance_class -- The name of the class to use for constructing individual objects
+        trim_values -- Trim whitespace off of the ends of the values in case that spaces between
+                       the list are not included
+        """
+
+        super(ListField, self).__init__(name, title, description, none_allowed, empty_allowed, required_on_create, required_on_edit)
+        self.instance_class = instance_class
+        self.trim_values = trim_values
+
+        # Create an instance for converting the values
+        if self.instance_class is not None:
+            self.instance = self.instance_class(self.name, self.title, self.description)
+        else:
+            self.instance = None
+
+    def to_python(self, value, session_key=None):
         Field.to_python(self, value, session_key)
 
+        # Convert the value into an array
+        values_list = None
+
         if value is not None:
-            return value.split(",")
+            values_list = value.split(",")
         else:
-            return []
+            values_list = []
+
+        # Trim the values if requested
+        if self.trim_values:
+            values_list = [value.strip() for value in values_list]
+            print values_list
+
+        # If we have no instances class, then just return the plain list
+        if self.instance_class is None:
+            return values_list
+
+        # Otherwise, convert the instances accordingly
+        else:
+            # Convert the value
+            instances_list = []
+            for instance_value in values_list:
+                instances_list.append(self.instance.to_python(instance_value))
+
+            return instances_list
 
     def to_string(self, value):
 
         if value is not None:
-            return ",".join(value)
+
+            # Use the instance to_string if we have an instance
+            if self.instance is not None:
+                values_list = []
+
+                for individual_value in value:
+                    values_list.append(self.instance.to_string(individual_value))
+                
+                return ",".join(values_list)
+
+            # Otherwise, process it as a string
+            else:
+                return ",".join(value)
 
         return ""
 
@@ -515,6 +584,10 @@ class IPNetworkField(Field):
 
     def to_string(self, value):
         if value is not None:
-            return str(value)
+            # Get the main address if this is a single address
+            if value.num_addresses == 1:
+                return str(value.network_address)
+            else:
+                return str(value)
 
         return ""
