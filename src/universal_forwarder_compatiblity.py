@@ -1,7 +1,7 @@
 """
 This module includes a series of libraries that are useful for allowing modular inputs to work on
 Univeral Forwarder instances that don't include the Python interpeter and thus don't have access
-to Splunk's libraries.abs
+to Splunk's libraries.
 
 The functions provided will default to using the Splunk function if available. Otherwise, the
 built-in function will be used.
@@ -15,7 +15,6 @@ import os
 try:
     from splunk.appserver.mrsparkle.lib.util import make_splunkhome_path as core_make_splunkhome_path
     from splunk.util import normalizeBoolean
-    import splunk.rest
     UF_MODE = False
 except:
     UF_MODE = True
