@@ -16,6 +16,7 @@ from threading import RLock
 from .universal_forwarder_compatiblity import make_splunkhome_path, UF_MODE, normalizeBoolean
 from .exceptions import FieldValidationException
 from .fields import Field, BooleanField
+from .shortcuts import forgive_splunkd_outages
 
 class ModularInputConfig():
     """
@@ -110,38 +111,6 @@ class ModularInputConfig():
 
         return ModularInputConfig(server_host, server_uri, session_key, checkpoint_dir,
                                   configuration)
-
-def forgive_splunkd_outages(function):
-    """
-    Try the given function and swallow Splunkd connection exceptions until the limit is reached or
-    the function works.
-
-    Arguments:
-    function -- The function to call
-    """
-    def wrapper(*args, **kwargs):
-        """
-        This wrapper will provide the swallowing of the exception for the provided function call.
-        """
-        attempts = 6
-        attempt_delay = 5
-
-        attempts_tried = 0
-
-        while attempts_tried < attempts:
-            try:
-                return function(*args, **kwargs)
-            except splunk.SplunkdConnectionException:
-
-                # Sleep for a bit in order to let Splunk recover in case this is a temporary issue
-                time.sleep(attempt_delay)
-                attempts_tried += 1
-
-                # If we hit the limit of the attempts, then throw the exception
-                if attempts_tried >= attempts:
-                    raise
-
-    return wrapper
 
 class ModularInput():
     """
@@ -513,77 +482,6 @@ class ModularInput():
     @logger.setter
     def logger(self, logger):
         self._logger = logger
-
-    def escape_colons(self, string_to_escape):
-        """
-        Escape the colons. This is necessary for secure password stanzas.
-        """
-        return string_to_escape.replace(":", "\\:")
-
-    def get_secure_password_stanza(self, username, realm=""):
-        """
-        Make the stanza name for a entry in the storage/passwords endpoint from the username and
-        realm.
-        """
-        return self.escape_colons(realm) + ":" + self.escape_colons(username) + ":"
-
-    @forgive_splunkd_outages
-    def get_secure_password(self, realm, username=None, session_key=None):
-        """
-        Get the secure password that matches the given realm and username. If no username is
-        provided, the first entry with the given realm will be returned.
-        """
-
-        if UF_MODE:
-            self.logger.warn("Unable to retrieve the secure credential since the input appears " +
-                             "to be running in a Univeral Forwarder")
-            # Cannot get the secure password in universal forwarder mode since we don't
-            # have access to Splunk libraries
-            return None
-
-        # Look up the entry by realm only if no username is provided.
-        if username is None or len(username) == 0:
-            return self.get_secure_password_by_realm(realm, session_key)
-
-        # Get secure password
-        stanza = self.get_secure_password_stanza(username, realm)
-        try:
-            server_response, server_content = splunk.rest.simpleRequest('/services/storage/passwords/' + stanza + '?output_mode=json', sessionKey=session_key)
-        except splunk.ResourceNotFound:
-            return None
-
-        if server_response['status'] == '404':
-            return None
-        elif server_response['status'] != '200':
-            raise Exception("Could not get the secure passwords")
-
-        passwords_content = json.loads(server_content)
-        password = passwords_content['entry']
-
-        return password[0]
-
-    @forgive_splunkd_outages
-    def get_secure_password_by_realm(self, realm, session_key):
-        """
-        Get the secure password that matches the given realm.
-        """
-
-        # Get secure passwords
-        server_response, server_content = splunk.rest.simpleRequest('/services/storage/passwords?output_mode=json', sessionKey=session_key)
-
-        if server_response['status'] != '200':
-            raise Exception("Could not get the secure passwords")
-
-        passwords_content = json.loads(server_content)
-        passwords = passwords_content['entry']
-
-        # Filter down output to the ones matching the realm
-        matching_passwords = filter(lambda x: x['content']['realm'] == realm, passwords)
-
-        if len(matching_passwords) > 0:
-            return matching_passwords[0]
-        else:
-            return None
 
     @classmethod
     @forgive_splunkd_outages
