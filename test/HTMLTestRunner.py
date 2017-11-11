@@ -731,9 +731,6 @@ class HTMLTestRunner(Template_mixin):
                 elif n == 1: nf += 1
                 else: ne += 1
 
-            print "Outputting", result.result
-            print "Result", result
-
             # format class description
             if cls.__module__ == "__main__":
                 name = cls.__name__
