@@ -102,4 +102,17 @@
         </exec>
     </target>
 
+    <!-- ================================= 
+          target: test_with_system_python
+         ================================= -->
+    <target name="test_with_system_python" description="Run unit tests using system's Python" depends="initialize">
+		<!-- Define a default value for the tests to run. Otherwise, arguments passed from the CLI will be used (e.g. ant test.run_unit -Dtest=TestPingParser) -->
+		<property name="test" value="" />
+
+        <exec failonerror="true" executable="python" dir="${test.directory}">
+        	<arg line="unit.py" />
+			<arg line="${test}" />
+        </exec>
+    </target>
+
 </project>
