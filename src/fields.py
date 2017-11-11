@@ -1,6 +1,11 @@
 
 import re
+import os
 from urlparse import urlparse
+
+from .exceptions import FieldValidationException
+from .modular_input_base_class import ModularInput
+from .universal_forwarder_compatiblity import UF_MODE, make_splunkhome_path
 
 class Field(object):
     """
