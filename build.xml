@@ -54,7 +54,7 @@
         <!-- Copy the rest of the files. -->
          <copy todir="${export_dir}/${ant.project.name}">
             <fileset dir="${src.directory}">
-                <include name="**.py" />
+                <include name="**/**.py" />
 				<exclude name="__init__.py" />
             </fileset>
         </copy>
@@ -89,7 +89,7 @@
     <!-- ================================= 
           target: test
          ================================= -->
-    <target name="test" description="Run unit tests" depends="initialize">
+    <target name="test" description="Run unit tests" depends="build">
 
 		<!-- Define a default value for the tests to run. Otherwise, arguments passed from the CLI will be used (e.g. ant test.run_unit -Dtest=TestPingParser) -->
 		<property name="test" value="" />

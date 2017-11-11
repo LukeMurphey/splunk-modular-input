@@ -4,8 +4,9 @@ import os
 from urlparse import urlparse
 
 from .exceptions import FieldValidationException
-from .modular_input_base_class import ModularInput
+from .server_info import ServerInfo
 from .universal_forwarder_compatiblity import UF_MODE, make_splunkhome_path
+from .contrib.ipaddress import ip_network
 
 class Field(object):
     """
@@ -341,7 +342,7 @@ class URLField(Field):
 
         parsed_value = URLField.parse_url(value.strip(), self.name)
 
-        if self.require_https_on_cloud and parsed_value.scheme == "http" and session_key is not None and ModularInput.is_on_cloud(session_key):
+        if self.require_https_on_cloud and parsed_value.scheme == "http" and session_key is not None and ServerInfo.is_on_cloud(session_key):
             raise FieldValidationException("The value of '%s' for the '%s' parameter must use encryption (be HTTPS not HTTP)" % (str(value), self.name))
 
         return parsed_value
@@ -495,3 +496,25 @@ class FilePathField(Field):
 
     def to_string(self, value):
         return value
+
+class IPNetworkField(Field):
+    """
+    A validator that accepts IP addresses.
+    """
+
+    def to_python(self, value, session_key=None):
+        Field.to_python(self, value, session_key)
+
+        if value is not None:
+            try:
+                return ip_network(value, strict=False)
+            except ValueError as exception:
+                raise FieldValidationException(str(exception))
+        else:
+            return None
+
+    def to_string(self, value):
+        if value is not None:
+            return str(value)
+
+        return ""

@@ -5,9 +5,18 @@ import sys
 import os
 import HTMLTestRunner
 
+
+sys.path.append(os.path.join("..", "tmp", "packages", "modular_input.zip"))
+from modular_input.universal_forwarder_compatiblity import UF_MODE, make_splunkhome_path
+from modular_input.fields import IPNetworkField
+from modular_input.exceptions import FieldValidationException
+
+"""
 sys.path.append(os.path.join("..", "src"))
 
 from universal_forwarder_compatiblity import UF_MODE, make_splunkhome_path
+from fields import IPNetworkField
+"""
 
 def runOnlyIfSplunkPython(func):
     def _decorator(self, *args, **kwargs):
@@ -41,7 +50,6 @@ class TestShortcuts(unittest.TestCase):
         """
         Make sure the UF_MODE variable can be imported.
         """
-        print "UF_MODE:%r" % UF_MODE
         self.assertEquals(UF_MODE, False)
 
     @runOnlyIfSystemPython
@@ -49,7 +57,6 @@ class TestShortcuts(unittest.TestCase):
         """
         Make sure the UF_MODE variable can be imported.
         """
-        print "UF_MODE:%r" % UF_MODE
         self.assertEquals(UF_MODE, True)
 
     def test_make_splunkhome_path_builtin(self):
@@ -69,6 +76,27 @@ class TestShortcuts(unittest.TestCase):
         """
 
         self.assertTrue(make_splunkhome_path(['var', 'log', 'splunk', 'test.log'], False).endswith('/var/log/splunk/test.log'))
+
+class TestIPNetworkField(unittest.TestCase):
+
+    field = None
+
+    def setUp(self):
+        self.field = IPNetworkField('name', 'title', 'description')
+
+    def test_valid_range(self):
+        # Note: this has host bits set and this test will verify that strict mode isn't set
+        value = self.field.to_python(u'10.0.0.0/28')
+
+        self.assertEquals(value.num_addresses, 16)
+
+    def test_invalid_range(self):
+        with self.assertRaises(FieldValidationException):
+            self.field.to_python(u'10.0.0.X')
+
+    def test_single_ip(self):
+        value = self.field.to_python(u'10.0.0.6')
+        self.assertEquals(value.num_addresses, 1)
 
 if __name__ == '__main__':
     report_path = os.path.join('..', os.environ.get('TEST_OUTPUT', 'tmp/test_report.html'))
