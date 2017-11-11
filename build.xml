@@ -40,7 +40,7 @@
         <!-- Copy the files over that need substitution. -->
         <copy todir="${export_dir}/${ant.project.name}">
             <fileset dir="${src.directory}">
-                <include name="info.py" />
+                <include name="__init__.py" />
             </fileset>
             
             <!-- Perform the substitution of the build information -->
@@ -55,7 +55,7 @@
          <copy todir="${export_dir}/${ant.project.name}">
             <fileset dir="${src.directory}">
                 <include name="**.py" />
-				<exclude name="info.py" />
+				<exclude name="__init__.py" />
             </fileset>
         </copy>
 	</target>
