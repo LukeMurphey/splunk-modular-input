@@ -61,7 +61,10 @@ Below is an example of a modular input class. This class does the following:
 
 ```python
     import sys
-    sys.path.insert(0, 'modular_input.zip')
+    import os
+    path_to_mod_input_lib = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'modular_input.zip')
+    sys.path.insert(0, path_to_mod_input_lib)
+
     from modular_input import Field, ModularInput, URLField
 
     class MyInput(ModularInput):
@@ -94,21 +97,7 @@ Below is an example of a modular input class. This class does the following:
                 self.logger.debug("Your input should do something here, stanza=%s", stanza)
 
     if __name__ == '__main__':
-
-        my_input = None
-
-        try:
-            my_input = MyInput()
-            my_input.execute()
-            sys.exit(0)
-        except Exception as e:
-
-            # This logs general exceptions that would have been unhandled otherwise (such as coding
-            # errors)
-            if my_input is not None and my_input.logger is not None:
-                my_input.logger.exception("Unhandled exception was caught, this may be due to a defect in the script")
-            else:
-                raise e
+        MyInput.instantiate_and_execute()
 ```
 
 ## Other projects that may be of interest

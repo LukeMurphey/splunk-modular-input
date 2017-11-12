@@ -16,7 +16,6 @@ from threading import RLock
 from .universal_forwarder_compatiblity import make_splunkhome_path, UF_MODE, normalizeBoolean
 from .exceptions import FieldValidationException
 from .fields import Field, BooleanField
-from .shortcuts import forgive_splunkd_outages
 from .server_info import ServerInfo
 
 class ModularInputConfig():
@@ -1077,3 +1076,25 @@ class ModularInput():
 
             # Make sure to grab any exceptions so that we can print a valid error message
             self.print_error(str(exception), out_stream)
+
+    @classmethod
+    def instantiate_and_execute(cls):
+        """
+        This function instantiates an instance of the input and runs it such that it takes in
+        standard input and begins functioning.
+        """
+
+        input = None
+
+        try:
+            input = cls()
+            input.execute()
+            sys.exit(0)
+        except Exception as e:
+
+            # This logs general exceptions that would have been unhandled otherwise (such as coding
+            # errors)
+            if input is not None and input.logger is not None:
+                input.logger.exception("Unhandled exception was caught, this may be due to a defect in the script")
+            else:
+                raise e
