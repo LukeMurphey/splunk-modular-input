@@ -11,14 +11,11 @@ from modular_input.universal_forwarder_compatiblity import UF_MODE, make_splunkh
 from modular_input.fields import IPNetworkField, ListField
 from modular_input.exceptions import FieldValidationException
 
-"""
-sys.path.append(os.path.join("..", "src"))
-
-from universal_forwarder_compatiblity import UF_MODE, make_splunkhome_path
-from fields import IPNetworkField
-"""
-
 def runOnlyIfSplunkPython(func):
+    """
+    Run the given test only if Splunk's Python is running this test.
+    """
+
     def _decorator(self, *args, **kwargs):
         try:
             import splunk
@@ -30,6 +27,10 @@ def runOnlyIfSplunkPython(func):
     return _decorator
 
 def runOnlyIfSystemPython(func):
+    """
+    Run the given test only if Splunk's Python is _not_ running this test.
+    """
+
     def _decorator(self, *args, **kwargs):
         try:
             import splunk
