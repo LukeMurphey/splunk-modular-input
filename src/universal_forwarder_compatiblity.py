@@ -14,7 +14,7 @@ import os
 # Splunk's endpoints via simple request which means we will not able to load secure credentials.
 try:
     from splunk.appserver.mrsparkle.lib.util import make_splunkhome_path as core_make_splunkhome_path
-    from splunk.util import normalizeBoolean
+    from splunk.util import normalizeBoolean as core_normalizeBoolean
     UF_MODE = False
 except:
     UF_MODE = True
@@ -41,4 +41,4 @@ def normalizeBoolean(value, use_built_in=None):
         else:
             return False
     else:
-        return normalizeBoolean(value)
+        return core_normalizeBoolean(value)

@@ -7,7 +7,7 @@ import HTMLTestRunner
 
 
 sys.path.append(os.path.join("..", "tmp", "packages", "modular_input.zip"))
-from modular_input.universal_forwarder_compatiblity import UF_MODE, make_splunkhome_path
+from modular_input.universal_forwarder_compatiblity import UF_MODE, make_splunkhome_path, normalizeBoolean
 from modular_input.fields import IPNetworkField, ListField
 from modular_input.exceptions import FieldValidationException
 
@@ -40,9 +40,10 @@ def runOnlyIfSystemPython(func):
 
     return _decorator
 
-class TestShortcuts(unittest.TestCase):
+class TestUniversalForwarder(unittest.TestCase):
     """
-    Test the shortcuts module that provides some generic helpers.
+    Test the universal forwarder module that provides some generic helpers in case Splunk's
+    libraries are not available (like on Universal Forwarders which lack Splunk's Python).
     """
 
     @runOnlyIfSplunkPython
@@ -76,6 +77,22 @@ class TestShortcuts(unittest.TestCase):
         """
 
         self.assertTrue(make_splunkhome_path(['var', 'log', 'splunk', 'test.log'], False).endswith('/var/log/splunk/test.log'))
+
+    def test_normalize_boolean(self):
+        """
+        Ensure that make_splunkhome_path works using the built-in function.
+        """
+
+        self.assertTrue(normalizeBoolean(1), True)
+        self.assertTrue(normalizeBoolean(1, False), True)
+
+    @runOnlyIfSplunkPython
+    def test_normalize_boolean_default(self):
+        """
+        Ensure that make_splunkhome_path works using core Splunk's function.
+        """
+
+        self.assertTrue(normalizeBoolean(1), True)
 
 class TestIPNetworkField(unittest.TestCase):
     """
