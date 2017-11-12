@@ -29,7 +29,7 @@
 
         <!-- Create a temporary directory to send the files to -->
 		<property name="temp.directory" value="${java.io.tmpdir}${user.name}" />
-        <property name="export_dir" value="${temp.directory}${ant.project.name}" />
+        <property name="export_dir" value="${temp.directory}/${ant.project.name}" />
     </target>
 
     <!-- ================================= 
@@ -113,6 +113,12 @@
         	<arg line="unit.py" />
 			<arg line="${test}" />
         </exec>
+    </target>
+
+    <!-- ================================= 
+          target: test.deploy_and_run_unit
+         ================================= -->
+    <target name="test.deploy_and_run_unit" depends="test">
     </target>
 
 </project>
