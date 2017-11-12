@@ -28,7 +28,7 @@
 		<property file="default.properties" />
 
         <!-- Create a temporary directory to send the files to -->
-		<property name="temp.directory" value="${java.io.tmpdir}${user.name}" />
+		<property name="temp.directory" value="${java.io.tmpdir}/${user.name}" />
         <property name="export_dir" value="${temp.directory}/${ant.project.name}" />
     </target>
 
