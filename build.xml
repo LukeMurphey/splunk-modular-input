@@ -1,5 +1,18 @@
 <project default="build" name="modular_input">
 	
+	<!-- Define some things so that we can import things from environment variables -->
+	<property environment="env" />
+	
+	<macrodef name="import_environment_var">
+		<attribute name="property" />
+		<attribute name="variable" />
+		<sequential>
+			<condition property="@{property}" value="${env.@{variable}}">
+				<isset property="env.@{variable}" />
+			</condition>
+		</sequential>
+	</macrodef>
+
     <!-- ================================= 
           target: build
          ================================= -->
@@ -30,6 +43,9 @@
         <!-- Create a temporary directory to send the files to -->
 		<property name="temp.directory" value="${java.io.tmpdir}/${user.name}" />
         <property name="export_dir" value="${temp.directory}/${ant.project.name}" />
+
+		<!-- Import some parameters from environment variables -->
+		<import_environment_var property="value.deploy.splunk_home" variable="SPLUNK_HOME" />
     </target>
 
     <!-- ================================= 
