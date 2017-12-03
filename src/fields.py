@@ -566,6 +566,89 @@ class FilePathField(Field):
     def to_string(self, value):
         return value
 
+class DomainNameField(Field):
+    """
+    A validator that accepts domain names.
+    """
+
+    DOMAIN_NAME_RE = re.compile('^((?!-))(xn--)?[a-z0-9][a-z0-9-_]{0,61}[a-z0-9]{0,1}\.(xn--)?([a-z0-9\-]{1,61}|[a-z0-9-]{1,30}\.[a-z]{2,})$')
+
+    def to_python(self, value, session_key=None):
+        Field.to_python(self, value, session_key)
+
+        if value is not None:
+            if not self.DOMAIN_NAME_RE.match(value):
+                raise FieldValidationException("The value of '%s' for the '%s' parameter is not a valid domain name" % (value, self.name))
+
+            return value
+        else:
+            return None
+
+class MultiValidatorField(Field):
+    
+    def __init__(self, name, title, description, none_allowed=False, empty_allowed=True,
+                 required_on_create=None, required_on_edit=None, validators=None, default_message=None):
+        """
+        Create the field.
+
+        Arguments:
+        name -- Set the name of the field (e.g. "database_server")
+        title -- Set the human readable title (e.g. "Database server")
+        description -- Set the human readable description of the field (e.g. "The IP or domain name
+                       of the database server")
+        none_allowed -- Is a value of none allowed?
+        empty_allowed -- Is an empty string allowed?
+        required_on_create -- Is this field required when creating?
+        required_on_edit -- Is this field required when editing?
+        validate_file_existence -- If true, this field will generate an error if the file doesn't exist
+        """
+        super(MultiValidatorField, self).__init__(name, title, description, none_allowed, empty_allowed, required_on_create, required_on_edit)
+
+        # Stop if no validators were supplied
+        if validators is None or len(validators) == 0:
+            raise Exception("A list of the validators is required for the MultiValidatorField to test against")
+
+        # Here is where all of the instances of the validators will be stored
+        self.validators = []
+
+        # Construct the validator instances
+        for validator in validators:
+            self.validators.append(validator(self.name, self.title, self.description, self.none_allowed, self.empty_allowed, self.required_on_create, self.required_on_edit))
+
+        # This will point to the last validator instance that accepted the last value
+        self.last_used_validator = None
+
+        # Persist the error message
+        self.default_message = default_message
+
+    def to_python(self, value, session_key=None):
+        Field.to_python(self, value, session_key)
+
+        if value is not None:
+            messages =[]
+
+            for validator in self.validators:
+                try:
+                    python_value = validator.to_python(value, session_key)
+                    self.last_used_validator = validator
+                    return python_value
+                except FieldValidationException as e:
+                    messages.append(str(e))
+
+            # Generate an exception since the field could not be validated
+            if self.default_message is None:
+                raise FieldValidationException(";".join(messages))
+            else:
+                raise FieldValidationException(self.default_message)
+        else:
+            return None
+
+    def to_string(self, value):
+        if value is not None:
+            return self.last_used_validator.to_string(value)
+
+        return ""
+
 class IPNetworkField(Field):
     """
     A validator that accepts IP addresses.

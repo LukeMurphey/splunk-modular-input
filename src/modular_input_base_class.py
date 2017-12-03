@@ -760,10 +760,14 @@ class ModularInput():
 
         checkpoint_dict = cls.get_checkpoint_data(checkpoint_dir, stanza)
 
-        if checkpoint_dict is None or 'last_run' not in checkpoint_dict:
+        try:
+            if checkpoint_dict is None or 'last_run' not in checkpoint_dict:
+                return None
+            else:
+                return checkpoint_dict['last_run']
+        except TypeError:
+            # The returned JSON was invalid
             return None
-        else:
-            return checkpoint_dict['last_run']
 
     @classmethod
     def needs_another_run(cls, checkpoint_dir, stanza, interval, cur_time=None):
@@ -782,11 +786,15 @@ class ModularInput():
 
             return cls.is_expired(last_ran, interval, cur_time)
 
-        except IOError as e:
+        except IOError:
             # The file likely doesn't exist
             return True
 
-        except ValueError as e:
+        except ValueError:
+            # The file could not be loaded
+            return True
+
+        except TypeError:
             # The file could not be loaded
             return True
 

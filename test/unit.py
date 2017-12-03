@@ -8,7 +8,7 @@ import HTMLTestRunner
 
 sys.path.append(os.path.join("..", "tmp", "packages", "modular_input.zip"))
 from modular_input.universal_forwarder_compatiblity import UF_MODE, make_splunkhome_path, normalizeBoolean
-from modular_input.fields import IPNetworkField, ListField
+from modular_input.fields import IPNetworkField, ListField, DomainNameField, MultiValidatorField
 from modular_input.exceptions import FieldValidationException
 
 def runOnlyIfSplunkPython(func):
@@ -128,6 +128,48 @@ class TestIPNetworkField(unittest.TestCase):
     def test_single_ip(self):
         value = self.field.to_python(u'10.0.0.6')
         self.assertEquals(value.num_addresses, 1)
+
+class TestDomainNameField(unittest.TestCase):
+    """
+    Test the domain name field.
+    """
+
+    field = None
+
+    def setUp(self):
+        self.field = DomainNameField('name', 'title', 'description')
+
+    def test_convert_values(self):
+        self.field.to_python('google.com')
+
+    def test_convert_invalid(self):
+        with self.assertRaises(FieldValidationException):
+            self.field.to_python('____')
+
+    def test_convert_invalid_ip(self):
+        with self.assertRaises(FieldValidationException):
+            self.field.to_python('1.2.3.4')
+
+class TestMultiValidatorField(unittest.TestCase):
+    """
+    Test the field validator that allows you to use multiple validators to validate input.
+    """
+    field = None
+
+    def setUp(self):
+        self.field = MultiValidatorField('name', 'title', 'description', validators=[DomainNameField, IPNetworkField])
+
+    def test_convert_values_invalid(self):
+        try:
+            self.field.to_python(u' ')
+        except FieldValidationException as exception:
+            self.assertEqual(str(exception), "The value of ' ' for the 'name' parameter is not a valid domain name;u' ' does not appear to be an IPv4 or IPv6 network")
+
+    def test_convert_values_first_validator(self):
+        self.assertEqual(self.field.to_python('google.com'), 'google.com')
+
+    def test_convert_values_second_validator(self):
+        self.assertEqual(self.field.to_python(u'1.2.3.4/31').num_addresses, 2)
 
 class TestFieldList(unittest.TestCase):
     """
