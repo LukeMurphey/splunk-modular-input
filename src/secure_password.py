@@ -8,6 +8,7 @@ The two main functions that you may want to use are:
 """
 
 import json
+import urllib
 
 from .universal_forwarder_compatiblity import UF_MODE
 from .shortcuts import forgive_splunkd_outages
@@ -50,7 +51,7 @@ def get_secure_password(realm, username=None, session_key=None, logger=None):
     # Get secure password
     stanza = get_secure_password_stanza(username, realm)
     try:
-        server_response, server_content = splunk.rest.simpleRequest('/services/storage/passwords/' + stanza + '?output_mode=json', sessionKey=session_key)
+        server_response, server_content = splunk.rest.simpleRequest('/services/storage/passwords/' + urllib.quote_plus(stanza) + '?output_mode=json', sessionKey=session_key)
     except splunk.ResourceNotFound:
         return None
 
