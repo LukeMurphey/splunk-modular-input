@@ -129,6 +129,156 @@ class TestIPNetworkField(unittest.TestCase):
         value = self.field.to_python(u'10.0.0.6')
         self.assertEquals(value.num_addresses, 1)
 
+    def test_various_input(self):
+
+        test_values = [
+                        # ipv4
+                       [True, u"123.23.34.2"],
+                       [True, "172.26.168.134"],
+                       [True, "1.2.3.4"],
+                       [False, " 01.102.103.104  "],
+                       # ipv6 
+                       [True, "2001:db8:3333:4444:5555:6666:1.2.3.4"],
+                       [True, "::11.22.33.44"],
+                       [True, "2001:db8::123.123.123.123"],
+                       [True, "::1234:5678:91.123.4.56"],
+                       [True, "::1234:5678:1.2.3.4"],
+                       [True, "2001:db8::1234:5678:5.6.7.8"],
+                       [False, ""],
+                       #[True, "2001:0000:1234:0000:0000:C1C0:ABCD:0876"],
+                       [True, "2001:0:1234::C1C0:ABCD:876"],
+                       [True, "3ffe:0b00:0000:0000:0001:0000:0000:000a"],
+                       [True, "3ffe:b00::1:0:0:a"],
+                       [True, "FF02:0000:0000:0000:0000:0000:0000:0001"],
+                       [True, "FF02::1"],
+                       [True, "0000:0000:0000:0000:0000:0000:0000:0001"],
+                       [True, "0000:0000:0000:0000:0000:0000:0000:0000"],
+                       [True, "::"],
+                       [True, "::ffff:192.168.1.26"],
+                       [False, "02001:0000:1234:0000:0000:C1C0:ABCD:0876"],
+                       [False, "2001:0000:1234:0000:00001:C1C0:ABCD:0876"],
+                       [False, "2001:1:1:1:1:1:255Z255X255Y255"],
+                       [False, "3ffe:0b00:0000:0001:0000:0000:000a"],
+                       [False, "FF02:0000:0000:0000:0000:0000:0000:0000:0001"],
+                       [False, "3ffe:b00::1::a"],
+                       [False, "::1111:2222:3333:4444:5555:6666::"],
+                       [True, "2::10"],
+                       [True, "ff02::1"],
+                       [True, "fe80::"],
+                       [True, "2002::"],
+                       [True, "2001:db8::"],
+                       [True, "2001:0db8:1234::"],
+                       [True, "::ffff:0:0"],
+                       [True, "::ffff:192.168.1.1"],
+                       [True, "1:2:3:4:5:6:7:8"],
+                       [True, "1:2:3:4:5:6::8"],
+                       [True, "1:2:3:4:5::8"],
+                       [True, "1:2:3:4::8"],
+                       [True, "1:2:3::8"],
+                       [True, "1:2::8"],
+                       [True, "1::8"],
+                       [True, "1::2:3:4:5:6:7"],
+                       [True, "1::2:3:4:5:6"],
+                       [True, "1::2:3:4:5"],
+                       [True, "1::2:3:4"],
+                       [True, "1::2:3"],
+                       [True, "::2:3:4:5:6:7:8"],
+                       [True, "::2:3:4:5:6:7"],
+                       [True, "::2:3:4:5:6"],
+                       [True, "::2:3:4:5"],
+                       [True, "::2:3:4"],
+                       [True, "::2:3"],
+                       [True, "::8"],
+                       [True, "1:2:3:4:5:6::"],
+                       [True, "1:2:3:4:5::"],
+                       [True, "1:2:3:4::"],
+                       [True, "1:2:3::"],
+                       [True, "1:2::"],
+                       [True, "1::"],
+                       [True, "1:2:3:4:5::7:8"],
+                       [False, "1:2:3::4:5::7:8"],
+                       [False, "12345::6:7:8"],
+                       [True, "1:2:3:4::7:8"],
+                       [True, "1:2:3::7:8"],
+                       [True, "1:2::7:8"],
+                       [True, "1::7:8"],
+                       [True, "1:2:3:4:5:6:1.2.3.4"],
+                       [True, "1:2:3:4:5::1.2.3.4"],
+                       [True, "1:2:3:4::1.2.3.4"],
+                       [True, "1:2:3::1.2.3.4"],
+                       [True, "1:2::1.2.3.4"],
+                       [True, "1::1.2.3.4"],
+                       [True, "1:2:3:4::5:1.2.3.4"],
+                       [True, "1:2:3::5:1.2.3.4"],
+                       [True, "1:2::5:1.2.3.4"],
+                       [True, "1::5:1.2.3.4"],
+                       [True, "1::5:11.22.33.44"],
+                       [False, "1::5:400.2.3.4"],
+                       [False, "1::5:260.2.3.4"],
+                       [False, "1::5:256.2.3.4"],
+                       [False, "1::5:1.256.3.4"],
+                       [False, "1::5:1.2.256.4"],
+                       [False, "1::5:1.2.3.256"],
+                       [False, "1::5:300.2.3.4"],
+                       [False, "1::5:1.300.3.4"],
+                       [False, "1::5:1.2.300.4"],
+                       [False, "1::5:1.2.3.300"],
+                       [False, "1::5:900.2.3.4"],
+                       [False, "1::5:1.900.3.4"],
+                       [False, "1::5:1.2.900.4"],
+                       [False, "1::5:1.2.3.900"],
+                       [False, "1::5:300.300.300.300"],
+                       [False, "1::5:3000.30.30.30"],
+                       [False, "1::400.2.3.4"],
+                       [False, "1::260.2.3.4"],
+                       [False, "1::256.2.3.4"],
+                       [False, "1::1.256.3.4"],
+                       [False, "1::1.2.256.4"],
+                       [False, "1::1.2.3.256"],
+                       [False, "1::300.2.3.4"],
+                       [False, "1::1.300.3.4"],
+                       [False, "1::1.2.300.4"],
+                       [False, "1::1.2.3.300"],
+                       [False, "1::900.2.3.4"],
+                       [False, "1::1.900.3.4"],
+                       [False, "1::1.2.900.4"],
+                       [False, "1::1.2.3.900"],
+                       [False, "1::300.300.300.300"],
+                       [False, "1::3000.30.30.30"],
+                       [False, "::400.2.3.4"],
+                       [False, "::260.2.3.4"],
+                       [False, "::256.2.3.4"],
+                       [False, "::1.256.3.4"],
+                       [False, "::1.2.256.4"],
+                       [False, "::1.2.3.256"],
+                       [False, "::300.2.3.4"],
+                       [False, "::1.300.3.4"],
+                       [False, "::1.2.300.4"],
+                       [False, "::1.2.3.300"],
+                       [False, "::900.2.3.4"],
+                       [False, "::1.900.3.4"],
+                       [False, "::1.2.900.4"],
+                       [False, "::1.2.3.900"],
+                       [False, "::300.300.300.300"],
+                       [False, "::3000.30.30.30"],
+                       [True, "fe80::217:f2ff:254.7.237.98"],
+                       [True, "fe80::217:f2ff:fe07:ed62"],
+                       [True, "2001:DB8:0:0:8:800:200C:417A"],
+                       [True, "FF01:0:0:0:0:0:0:101"],
+                       [True, "FF01::101"],
+                       [True, "0:0:0:0:0:0:0:1"],
+                       [True, "0:0:0:0:0:0:0:0"],
+                       [True, "2001:2:3:4:5:6:7:134"],
+                       [True, "1111:2222:3333:4444:5555:6666:7777:8888"],
+                       [True, "1111:2222:3333:4444:5555:6666:7777::"]]
+
+        for test_value in test_values:
+            if test_value[0] is False:
+                with self.assertRaises(FieldValidationException):
+                    self.field.to_python(unicode(test_value[1]))
+            else:
+                self.field.to_python(unicode(test_value[1]))
+
 class TestDomainNameField(unittest.TestCase):
     """
     Test the domain name field.
@@ -139,16 +289,32 @@ class TestDomainNameField(unittest.TestCase):
     def setUp(self):
         self.field = DomainNameField('name', 'title', 'description')
 
-    def test_convert_values(self):
-        self.field.to_python('google.com')
+    def test_various_input(self):
+        """
+        This test checks a series of known good and bad input.
+        """
 
-    def test_convert_invalid(self):
-        with self.assertRaises(FieldValidationException):
-            self.field.to_python('____')
+        test_values = [[True, "liw.logsa.army.mil"],
+                       [True, "mydomain.com"],
+                       [True, "test.mydomain.com"],
+                       [True, "en.wikipedia.org"],
+                       #[False, "28999"],
+                       [True, "abc"],
+                       [True, "3abc"],
+                       #[False, "192.168.0.2000000000"],
+                       [False, "*hi*"],
+                       [False, "-hi-"],
+                       [False, "_domain"],
+                       [False, "____"],
+                       [False, ":54:sda54"]]
 
-    def test_convert_invalid_ip(self):
-        with self.assertRaises(FieldValidationException):
-            self.field.to_python('1.2.3.4')
+        for test_value in test_values:
+            if test_value[0] is False:
+                with self.assertRaises(FieldValidationException):
+                    self.field.to_python(test_value[1])
+                    print "Exception not raised for:", test_value[1]
+            else:
+                self.field.to_python(test_value[1])
 
 class TestMultiValidatorField(unittest.TestCase):
     """

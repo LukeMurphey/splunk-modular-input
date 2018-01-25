@@ -571,13 +571,25 @@ class DomainNameField(Field):
     A validator that accepts domain names.
     """
 
-    DOMAIN_NAME_RE = re.compile('^((?!-))(xn--)?[a-z0-9][a-z0-9-_]{0,61}[a-z0-9]{0,1}\.(xn--)?([a-z0-9\-]{1,61}|[a-z0-9-]{1,30}\.[a-z]{2,})$')
+    def is_valid_hostname(self, dn):
+        """
+        Determine if the given hostname is valid.
+        See https://stackoverflow.com/questions/2532053/validate-a-hostname-string
+        """
+        if dn.endswith('.'):
+            dn = dn[:-1]
+        if len(dn) < 1 or len(dn) > 253:
+            return False
+        ldh_re = re.compile('^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$',
+                            re.IGNORECASE)
+        return all(ldh_re.match(x) for x in dn.split('.'))
 
     def to_python(self, value, session_key=None):
         Field.to_python(self, value, session_key)
 
         if value is not None:
-            if not self.DOMAIN_NAME_RE.match(value):
+            
+            if not self.is_valid_hostname(value):
                 raise FieldValidationException("The value of '%s' for the '%s' parameter is not a valid domain name" % (value, self.name))
 
             return value
