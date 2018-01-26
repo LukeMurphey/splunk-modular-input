@@ -294,7 +294,7 @@ class TestDomainNameField(unittest.TestCase):
         This test checks a series of known good and bad input.
         """
 
-        test_values = [[True, "liw.logsa.army.mil"],
+        test_values = [[True, "something.else.army.mil"],
                        [True, "mydomain.com"],
                        [True, "test.mydomain.com"],
                        [True, "en.wikipedia.org"],
