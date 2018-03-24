@@ -3,6 +3,7 @@ import unittest
 import errno
 import sys
 import os
+import re
 import HTMLTestRunner
 
 
@@ -382,18 +383,83 @@ class TestFieldList(unittest.TestCase):
         to_string = field.to_string(values)
         self.assertEquals(to_string, 'A,B,C')
 
-class TestServerInfo(unittest.TestCase):
+class LiveSplunkTestCase(unittest.TestCase):
+    """
+    This loads information from local.properties that is useful for testing against a live Splunk install.
+    """
+
+    def changeEncodingToAscii(self, s):
+        if s is not None:
+            return s.encode("ascii")
+        else:
+            return s
+
+    def loadConfig(self, properties_file=None):
+        
+        if properties_file is None:
+            properties_file = os.path.join( "..", "local.properties")
+        
+        fp = open(properties_file)
+        regex = re.compile("(?P<key>[^=]+)[=](?P<value>.*)")
+        
+        settings = {}
+        
+        for l in fp.readlines():
+            r = regex.search(l)
+            
+            if r is not None:
+                d = r.groupdict()
+                settings[ d["key"] ] = d["value"]
+        
+        self.username = self.changeEncodingToAscii(settings.get("test.splunk.username", None))
+        self.password = self.changeEncodingToAscii(settings.get("test.splunk.password", None))
+
+    def setUp(self):
+        self.loadConfig()
+
+class TestServerInfo(LiveSplunkTestCase):
     """
     Test the ServerInfo class.
     """
     
+    def test_get_dict_object(self):
+        d = {
+            'a': {
+                'b': {
+                    'c': 'C'
+                }
+            }
+        }
+
+        self.assertEquals(ServerInfo.get_dict_object(d, ['a', 'b', 'c']), 'C')
+
     @runOnlyIfSplunkPython
     def test_is_shc_enabled(self):
-        import splunk
-        session_key = splunk.auth.getSessionKey(username='admin', password='changeme')
+        if self.username is not None and self.password is not None:
+            import splunk
+            try:
+                session_key = splunk.auth.getSessionKey(username=self.username, password=self.password)
 
-        # This assumes you are testing against a non-SHC environment
-        self.assertFalse(ServerInfo.is_on_shc(session_key))
+                # This assumes you are testing against a non-SHC environment
+                self.assertFalse(ServerInfo.is_on_shc(session_key))
+            except splunk.SplunkdConnectionException:
+                pass
+        else:
+            self.skipTest('Skipping test since Splunk authentication data is not available')
+
+    @runOnlyIfSplunkPython
+    def test_is_shc_captain(self):
+        if self.username is not None and self.password is not None:
+            import splunk
+            try:
+                session_key = splunk.auth.getSessionKey(username=self.username, password=self.password)
+
+                # This assumes you are testing against a non-SHC environment
+                self.assertEquals(ServerInfo.is_shc_captain(session_key), None)
+            except splunk.SplunkdConnectionException:
+                pass
+        else:
+            self.skipTest('Skipping test since Splunk authentication data is not available')
 
 if __name__ == '__main__':
     report_path = os.path.join('..', os.environ.get('TEST_OUTPUT', 'tmp/test_report.html'))
