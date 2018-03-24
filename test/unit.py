@@ -388,6 +388,9 @@ class LiveSplunkTestCase(unittest.TestCase):
     This loads information from local.properties that is useful for testing against a live Splunk install.
     """
 
+    username = None
+    password = None
+
     def changeEncodingToAscii(self, s):
         if s is not None:
             return s.encode("ascii")
@@ -399,7 +402,11 @@ class LiveSplunkTestCase(unittest.TestCase):
         if properties_file is None:
             properties_file = os.path.join( "..", "local.properties")
         
-        fp = open(properties_file)
+        try:
+            fp = open(properties_file)
+        except IOError:
+            return
+
         regex = re.compile("(?P<key>[^=]+)[=](?P<value>.*)")
         
         settings = {}
