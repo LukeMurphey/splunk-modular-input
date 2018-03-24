@@ -9,6 +9,7 @@ class ServerInfo(object):
     """
 
     server_info = None
+    shc_enabled = None
 
     @classmethod
     @forgive_splunkd_outages
@@ -39,3 +40,30 @@ class ServerInfo(object):
         server_info = cls.get_server_info(session_key)
 
         return server_info['content'].get('instance_type', None) == 'cloud'
+
+    @classmethod
+    @forgive_splunkd_outages
+    def is_on_shc(cls, session_key):
+        """
+        Determine if the host is running on SHC.
+        """
+
+        # Use the cached server information if possible
+        if cls.shc_enabled is not None:
+            return cls.shc_enabled
+
+        # Get the shc cluster info
+        try:
+            response, _ = splunk.rest.simpleRequest('/services/shcluster/status?output_mode=json', sessionKey=session_key)
+
+            # If we get a 200 code then this is using SHC
+            if response.status == 200:
+                cls.shc_enabled = True
+            else:
+                cls.shc_enabled = False
+        except splunk.ResourceNotFound:
+            # This shouldn't generate a 404 from what I can tell but if it does then I would say
+            # SHC is disabled
+            cls.shc_enabled = False
+
+        return cls.shc_enabled

@@ -10,6 +10,7 @@ sys.path.append(os.path.join("..", "tmp", "packages", "modular_input.zip"))
 from modular_input.universal_forwarder_compatiblity import UF_MODE, make_splunkhome_path, normalizeBoolean
 from modular_input.fields import IPNetworkField, ListField, DomainNameField, MultiValidatorField
 from modular_input.exceptions import FieldValidationException
+from modular_input.server_info import ServerInfo
 
 def runOnlyIfSplunkPython(func):
     """
@@ -40,6 +41,9 @@ def runOnlyIfSystemPython(func):
             return func(self, *args, **kwargs)
 
     return _decorator
+
+def runOnlyIfSplunkIsRunning(func):
+    pass
 
 class TestUniversalForwarder(unittest.TestCase):
     """
@@ -133,7 +137,7 @@ class TestIPNetworkField(unittest.TestCase):
 
         test_values = [
                         # ipv4
-                       [True, u"123.23.34.2"],
+                       [True, "123.23.34.2"],
                        [True, "172.26.168.134"],
                        [True, "1.2.3.4"],
                        [False, " 01.102.103.104  "],
@@ -377,6 +381,19 @@ class TestFieldList(unittest.TestCase):
 
         to_string = field.to_string(values)
         self.assertEquals(to_string, 'A,B,C')
+
+class TestServerInfo(unittest.TestCase):
+    """
+    Test the ServerInfo class.
+    """
+    
+    @runOnlyIfSplunkPython
+    def test_is_shc_enabled(self):
+        import splunk
+        session_key = splunk.auth.getSessionKey(username='admin', password='changeme')
+
+        # This assumes you are testing against a non-SHC environment
+        self.assertFalse(ServerInfo.is_on_shc(session_key))
 
 if __name__ == '__main__':
     report_path = os.path.join('..', os.environ.get('TEST_OUTPUT', 'tmp/test_report.html'))
