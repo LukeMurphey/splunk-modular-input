@@ -948,26 +948,32 @@ class ModularInput():
                 self.do_shutdown()
                 sys.exit(2)
 
-            # Initialize the document that will be used to output the results
-            self.document = self._create_document()
+            # Stop if the host is running SHC and this isn't the captain
+            if ServerInfo.is_shc_captain(input_config.session_key) == False:
+                self.logger.debug("The input will be skipped for now since is not the SHC captain")
+            
+            # Ok, we are clear to run
+            else:
+                # Initialize the document that will be used to output the results
+                self.document = self._create_document()
 
-            for stanza, conf in input_config.configuration.items():
+                for stanza, conf in input_config.configuration.items():
 
-                try:
-                    cleaned_params = self.validate_parameters(stanza, conf)
-                    self.run(stanza, cleaned_params, input_config)
+                    try:
+                        cleaned_params = self.validate_parameters(stanza, conf)
+                        self.run(stanza, cleaned_params, input_config)
 
-                except FieldValidationException as exception:
-                    if log_exception_and_continue:
-                        self.logger.error("The input stanza '%s' is invalid: %s" % (stanza, str(exception)))
-                    else:
-                        raise exception
+                    except FieldValidationException as exception:
+                        if log_exception_and_continue:
+                            self.logger.error("The input stanza '%s' is invalid: %s" % (stanza, str(exception)))
+                        else:
+                            raise exception
 
-            # Stop if the input is not running in single instance mode and allow Splunk to manage
-            # scheduling this input
-            if not self.use_single_instance:
-                self.logger.info("Successfully executed all of the inputs")
-                break
+                # Stop if the input is not running in single instance mode and allow Splunk to manage
+                # scheduling this input
+                if not self.use_single_instance:
+                    self.logger.info("Successfully executed all of the inputs")
+                    break
 
             # Sleep for a bit
             try:
