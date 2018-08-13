@@ -69,6 +69,9 @@ class ServerInfo(object):
             # This shouldn't generate a 404 from what I can tell but if it does then I would say
             # SHC is disabled
             cls.shc_enabled = False
+        except splunk.LicenseRestriction:
+            # This host may be using the dev license
+            cls.shc_enabled = False
 
         return cls.shc_info
 
@@ -95,6 +98,9 @@ class ServerInfo(object):
         except splunk.ResourceNotFound:
             # This shouldn't generate a 404 from what I can tell but if it does then I would say
             # SHC is disabled
+            cls.shc_enabled = False
+        except splunk.LicenseRestriction:
+            # This host may be using the dev license
             cls.shc_enabled = False
 
         return cls.shc_enabled
