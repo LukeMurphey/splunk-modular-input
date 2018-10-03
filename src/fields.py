@@ -284,6 +284,32 @@ class RegexField(Field):
 
         return ""
 
+class WildcardField(Field):
+    """
+    Much like a regular expression field but takes wildcards. This will return a regular expression.
+    """
+
+    def to_python(self, value, session_key=None):
+    
+        Field.to_python(self, value, session_key)
+
+        if value is not None:
+            try:
+                regex_escaped = re.escape(value)
+                regex_escaped = regex_escaped.replace('\*', ".*")
+                return re.compile(regex_escaped)
+            except Exception as exception:
+                raise FieldValidationException(str(exception))
+        else:
+            return None
+
+    def to_string(self, value):
+
+        if value is not None:
+            return value.pattern
+
+        return ""
+
 class IntegerField(Field):
     """
     A validator that converts string input to an integer.

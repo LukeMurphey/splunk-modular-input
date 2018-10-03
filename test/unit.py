@@ -9,7 +9,7 @@ import HTMLTestRunner
 
 sys.path.append(os.path.join("..", "tmp", "packages", "modular_input.zip"))
 from modular_input.universal_forwarder_compatiblity import UF_MODE, make_splunkhome_path, normalizeBoolean
-from modular_input.fields import IPNetworkField, ListField, DomainNameField, MultiValidatorField, DurationField
+from modular_input.fields import IPNetworkField, ListField, DomainNameField, MultiValidatorField, DurationField, WildcardField
 from modular_input.exceptions import FieldValidationException
 from modular_input.server_info import ServerInfo
 
@@ -382,6 +382,21 @@ class TestFieldList(unittest.TestCase):
 
         to_string = field.to_string(values)
         self.assertEquals(to_string, 'A,B,C')
+
+class TestWildcardField(unittest.TestCase):
+    """
+    Tests the wildcard field.
+    """
+    field = None
+
+    def setUp(self):
+        self.field = WildcardField('name', 'title', 'description')
+
+    def test_convert_values(self):
+        converted_regex = self.field.to_python('*.log')
+
+        self.assertFalse(converted_regex.match('test.txt'))
+        self.assertTrue(converted_regex.match('test.log'))
 
 class TestDurationField(unittest.TestCase):
     """
