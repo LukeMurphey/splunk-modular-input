@@ -9,7 +9,7 @@ import HTMLTestRunner
 
 sys.path.append(os.path.join("..", "tmp", "packages", "modular_input.zip"))
 from modular_input.universal_forwarder_compatiblity import UF_MODE, make_splunkhome_path, normalizeBoolean
-from modular_input.fields import IPNetworkField, ListField, DomainNameField, MultiValidatorField
+from modular_input.fields import IPNetworkField, ListField, DomainNameField, MultiValidatorField, DurationField
 from modular_input.exceptions import FieldValidationException
 from modular_input.server_info import ServerInfo
 
@@ -382,6 +382,35 @@ class TestFieldList(unittest.TestCase):
 
         to_string = field.to_string(values)
         self.assertEquals(to_string, 'A,B,C')
+
+class TestDurationField(unittest.TestCase):
+    """
+    Tests the duration field.
+    """
+
+    def test_duration_valid(self):
+        """
+        Tests the conversion of the duration string to an integer.
+        """
+        duration_field = DurationField("test_duration_valid", "title", "this is a test")
+
+        self.assertEqual(duration_field.to_python("1m"), 60)
+        self.assertEqual(duration_field.to_python("5m"), 300)
+        self.assertEqual(duration_field.to_python("5 minute"), 300)
+        self.assertEqual(duration_field.to_python("5"), 5)
+        self.assertEqual(duration_field.to_python("5h"), 18000)
+        self.assertEqual(duration_field.to_python("2d"), 172800)
+        self.assertEqual(duration_field.to_python("2w"), 86400 * 7 * 2)
+
+    def test_url_field_invalid(self):
+        """
+        Ensure that invalid URL fields are detected.
+        """
+
+        duration_field = DurationField("test_url_field_invalid", "title", "this is a test")
+
+        self.assertRaises(FieldValidationException, lambda: duration_field.to_python("1 treefrog"))
+        self.assertRaises(FieldValidationException, lambda: duration_field.to_python("minute"))
 
 class LiveSplunkTestCase(unittest.TestCase):
     """
