@@ -68,7 +68,7 @@ Below is an example of a modular input class. This class does the following:
     from modular_input import Field, ModularInput, URLField
 
     class MyInput(ModularInput):
-        def __init__(self, timeout=30):
+        def __init__(self):
 
             scheme_args = {'title': "My input name",
                            'description': "This input is an example",
