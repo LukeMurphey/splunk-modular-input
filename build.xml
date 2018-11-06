@@ -32,7 +32,7 @@
     <!-- ================================= 
           target: package
          ================================= -->
-    <target name="package" description="Create the " depends="populate_export_dir">
+    <target name="package" description="Create the library package" depends="initialize_properties,setup_tmp_directory_for_export,populate_export_dir">
 
 		<!-- Make the directory where we will store the files -->
         <mkdir dir="${value.build.packageoutput.directory}" />
@@ -48,15 +48,33 @@
 			<fileset dir="${export_dir}" />
 		</zip>
 
+		<!-- Keep a copy in the tmp directory if the package location was customized because the tests will still assume it will be in the tmp directory-->
+		<if>
+			<not>
+                <equals arg1="${value.build.packageoutput.directory}/${value.build.package.file}" arg2="tmp/packages/${value.build.package.file}" />
+            </not>
+
+			<!-- Copy the file -->
+			<then>
+				<copy file="${value.build.packageoutput.directory}/${value.build.package.file}" tofile="tmp/packages/${value.build.package.file}"/>
+			</then>
+        </if>
+
         <!-- Delete the temporary location so that old files do not get streamed in -->
         <delete dir="${export_dir}" />
         <echo>Modular input build ${value.build.number} created: ${value.build.package.file}</echo>
     </target>
 
     <!-- ================================= 
+          target: deploy
+         ================================= -->
+    <target name="deploy" depends="package" >
+    </target>
+
+    <!-- ================================= 
           target: test_with_system_python
          ================================= -->
-    <target name="test_with_system_python" description="Run unit tests using system's Python" depends="initialize,package">
+    <target name="test_with_system_python" description="Run unit tests using system's Python" depends="initialize">
 
 		<!-- Define a default value for the tests to run. Otherwise, arguments passed from the CLI will be used (e.g. ant test.run_unit -Dtest=TestPingParser) -->
 		<property name="test" value="" />
