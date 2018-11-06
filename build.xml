@@ -30,6 +30,13 @@
 	</target>
 
     <!-- ================================= 
+          target: make_package_name
+         ================================= -->
+	<target name="make_package_name">
+		<property name="value.build.package.file" value="${value.build.packageoutput.directory}/${value.build.appname}.zip" />
+	</target>
+
+    <!-- ================================= 
           target: package
          ================================= -->
     <target name="package" description="Create the library package" depends="initialize_properties,setup_tmp_directory_for_export,populate_export_dir">
@@ -42,6 +49,12 @@
 
         <!-- Delete the existing file -->
         <delete file="${value.build.packageoutput.directory}/${value.build.package.file}" />
+
+        <!-- Delete the older versions of the file -->
+        <delete>
+            <fileset dir="${value.build.packageoutput.directory}" includes="**/modular_input.tar.gz"/>
+            <fileset dir="${value.build.packageoutput.directory}" includes="**/modular_input.zip"/>
+        </delete>
 
  		<!-- Zip up the file -->
 		<zip destfile="${value.build.packageoutput.directory}/${value.build.package.file}">
@@ -87,4 +100,7 @@
 
     <target name="test.setup" depends="test_with_system_python">
     </target>
+
+    <!-- the targets below don't apply since this is a library -->
+    <target name="appinspect" />
 </project>
