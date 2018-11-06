@@ -1,9 +1,11 @@
 import json
 import socket
 
-import splunk
-
+from .universal_forwarder_compatiblity import UF_MODE
 from .shortcuts import forgive_splunkd_outages
+
+if not UF_MODE:
+    import splunk
 
 class ServerInfo(object):
     """
@@ -21,6 +23,10 @@ class ServerInfo(object):
         """
         Get the server information object.
         """
+
+        # This isn't supported on a universal forwarder
+        if UF_MODE:
+            return None
 
         # Use the cached server information if possible
         if not force_refresh and cls.server_info is not None:
@@ -52,6 +58,10 @@ class ServerInfo(object):
         Get the SHC cluster information.
         """
 
+        # This isn't supported on a universal forwarder
+        if UF_MODE:
+            return None
+
         # Get the shc cluster info
         try:
             response, server_content = splunk.rest.simpleRequest('/services/shcluster/status?output_mode=json', sessionKey=session_key)
@@ -81,6 +91,10 @@ class ServerInfo(object):
         """
         Determine if the host is running on SHC.
         """
+
+        # This isn't supported on a universal forwarder
+        if UF_MODE:
+            return False
 
         # Use the cached server information if possible
         if cls.shc_enabled is not None:

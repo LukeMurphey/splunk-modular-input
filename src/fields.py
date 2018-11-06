@@ -4,9 +4,13 @@ import os
 from urlparse import urlparse
 
 from .exceptions import FieldValidationException
-from .server_info import ServerInfo
 from .universal_forwarder_compatiblity import UF_MODE, make_splunkhome_path
 from .contrib.ipaddress import ip_network
+
+try:
+    from .server_info import ServerInfo
+except ImportError:
+    ServerInfo = None
 
 class Field(object):
     """

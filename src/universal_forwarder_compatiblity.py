@@ -35,7 +35,8 @@ def normalizeBoolean(value, use_built_in=None):
     This wraps Splunk's normalizeBoolean in case this host is running a Universal Forwarder
     and doesn't have access to the built-in normalizeBoolean function.
     """
-    if use_built_in is True and UF_MODE:
+
+    if use_built_in is True or UF_MODE:
         if str(value).strip().lower() in ['1', 'true']:
             return True
         else:
