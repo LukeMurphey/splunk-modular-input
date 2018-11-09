@@ -51,7 +51,7 @@ def get_secure_password(realm, username=None, session_key=None, logger=None):
     # Get secure password
     stanza = get_secure_password_stanza(username, realm)
     try:
-        server_response, server_content = splunk.rest.simpleRequest('/services/storage/passwords/' + urllib.quote_plus(stanza) + '?output_mode=json', sessionKey=session_key)
+        server_response, server_content = splunk.rest.simpleRequest('/services/storage/passwords/' + urllib.quote_plus(stanza) + '?output_mode=json&count=0', sessionKey=session_key)
     except splunk.ResourceNotFound:
         return None
 
@@ -72,7 +72,7 @@ def get_secure_password_by_realm(realm, session_key):
     """
 
     # Get secure passwords
-    server_response, server_content = splunk.rest.simpleRequest('/services/storage/passwords?output_mode=json', sessionKey=session_key)
+    server_response, server_content = splunk.rest.simpleRequest('/services/storage/passwords?output_mode=json&count=0', sessionKey=session_key)
 
     if server_response['status'] != '200':
         raise Exception("Could not get the secure passwords")
