@@ -388,7 +388,12 @@ class RangeField(Field):
         if value is not None:
             try:
                 tmp = int(value)
-                return tmp >= self.low and tmp <= self.high
+                if tmp < self.low:
+                    raise FieldValidationException("The value of '%s' for the '%s' parameter must be greater than '%r'" % (str(value), self.name, self.low))
+                if tmp > self.high:
+                    raise FieldValidationException("The value of '%s' for the '%s' parameter must be less than '%r'" % (str(value), self.name, self.high))
+
+                return tmp
             except ValueError as exception:
                 raise FieldValidationException(str(exception))
         else:

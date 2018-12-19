@@ -9,7 +9,7 @@ import HTMLTestRunner
 
 sys.path.append(os.path.join("..", "tmp", "packages", "modular_input.zip"))
 from modular_input.universal_forwarder_compatiblity import UF_MODE, make_splunkhome_path, normalizeBoolean
-from modular_input.fields import IPNetworkField, ListField, DomainNameField, MultiValidatorField, DurationField, WildcardField
+from modular_input.fields import IPNetworkField, ListField, DomainNameField, MultiValidatorField, DurationField, WildcardField, RangeField
 from modular_input.exceptions import FieldValidationException
 from modular_input.server_info import ServerInfo
 
@@ -426,6 +426,37 @@ class TestDurationField(unittest.TestCase):
 
         self.assertRaises(FieldValidationException, lambda: duration_field.to_python("1 treefrog"))
         self.assertRaises(FieldValidationException, lambda: duration_field.to_python("minute"))
+
+
+class TestRangeField(unittest.TestCase):
+    """
+    Test the field for defining integer ranges.
+    """
+
+    field = None
+
+    def setUp(self):
+        self.field = RangeField('name', 'title', 'description', low=1, high=100)
+
+    def test_valid_range(self):
+        self.assertEquals(self.field.to_python(1), 1)
+        self.assertEquals(self.field.to_python(100), 100)
+        self.assertEquals(self.field.to_python(50), 50)
+
+        self.assertEquals(self.field.to_python("50"), 50)
+
+    def test_invalid_range(self):
+        with self.assertRaises(FieldValidationException):
+            self.field.to_python(0)
+    
+        with self.assertRaises(FieldValidationException):
+            self.field.to_python(-1)
+        
+        with self.assertRaises(FieldValidationException):
+            self.field.to_python(101)
+
+        with self.assertRaises(FieldValidationException):
+            self.field.to_python("101")
 
 class LiveSplunkTestCase(unittest.TestCase):
     """
