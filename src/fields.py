@@ -389,9 +389,9 @@ class RangeField(Field):
             try:
                 tmp = int(value)
                 if tmp < self.low:
-                    raise FieldValidationException("The value of '%s' for the '%s' parameter must be greater than '%r'" % (str(value), self.name, self.low))
+                    raise FieldValidationException("The value of '%s' for the '%s' parameter must be greater than or equal to '%r'" % (str(value), self.name, self.low))
                 if tmp > self.high:
-                    raise FieldValidationException("The value of '%s' for the '%s' parameter must be less than '%r'" % (str(value), self.name, self.high))
+                    raise FieldValidationException("The value of '%s' for the '%s' parameter must be less than or equal to '%r'" % (str(value), self.name, self.high))
 
                 return tmp
             except ValueError as exception:
