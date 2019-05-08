@@ -373,10 +373,10 @@ class RangeField(Field):
     A validator that converts string input to a pair of integers indicating a range.
     """
 
-    def __init__(self, name, title, description, low, high, none_allowed=False, empty_allowed=True):
+    def __init__(self, name, title, description, low, high, none_allowed=False, empty_allowed=True, required_on_create=None, required_on_edit=None):
 
-        super(RangeField, self).__init__(name, title, description, none_allowed=False,
-                                         empty_allowed=True)
+        super(RangeField, self).__init__(name, title, description, none_allowed,
+                                         empty_allowed, required_on_create, required_on_edit)
 
         self.low = low
         self.high = high
