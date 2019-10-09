@@ -103,4 +103,5 @@
 
     <!-- the targets below don't apply since this is a library -->
     <target name="appinspect" />
+    <target name="btool" />
 </project>
