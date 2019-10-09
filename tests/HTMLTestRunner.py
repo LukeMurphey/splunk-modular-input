@@ -95,10 +95,12 @@ Version in 0.7.1
 # TODO: simplify javascript using ,ore than 1 class in the class attribute?
 
 import datetime
-import StringIO
 import sys
 import time
 import unittest
+import six
+import sys
+import io
 from xml.sax import saxutils
 
 
@@ -115,21 +117,23 @@ from xml.sax import saxutils
 
 def to_unicode(s):
     try:
-        return unicode(s)
+        return six.text_type(s)
     except UnicodeDecodeError:
         # s is non ascii byte string
         return s.decode('unicode_escape')
 
 class OutputRedirector(object):
-    """ Wrapper to redirect stdout or stderr """
+    """
+    Wrapper to redirect stdout or stderr.
+    """
     def __init__(self, fp):
         self.fp = fp
 
     def write(self, s):
-        self.fp.write(to_unicode(s))
+        self.fp.write(s)
 
     def writelines(self, lines):
-        lines = map(to_unicode, lines)
+        # lines = map(to_unicode, lines)
         self.fp.writelines(lines)
 
     def flush(self):
@@ -473,7 +477,7 @@ a.popup_link:hover {
 """ # variables: (style, desc, count, Pass, fail, error, cid)
 
 
-    REPORT_TEST_WITH_OUTPUT_TMPL = ur"""
+    REPORT_TEST_WITH_OUTPUT_TMPL = r"""
 <tr id='%(tid)s' class='%(Class)s'>
     <td class='%(style)s'><div class='testcase'>%(desc)s</div></td>
     <td colspan='5' align='center'>
@@ -485,7 +489,7 @@ a.popup_link:hover {
     <div id='div_%(tid)s' class="popup_window">
         <div style='text-align: right;cursor:pointer;font-size: large;font-weight: bold;'>
         <a onfocus='this.blur();' onclick="document.getElementById('div_%(tid)s').style.display = 'none' " >
-           ×</a>
+           x</a>
         </div>
         <pre>
         %(script)s
@@ -529,7 +533,7 @@ class _TestResult(TestResult):
 
     def __init__(self, verbosity=1):
         TestResult.__init__(self)
-        self.outputBuffer = StringIO.StringIO()
+        self.outputBuffer = io.BytesIO()#six.StringIO()
         self.stdout0 = None
         self.stderr0 = None
         self.success_count = 0
@@ -641,7 +645,7 @@ class HTMLTestRunner(Template_mixin):
         test(result)
         self.stopTime = datetime.datetime.now()
         self.generateReport(test, result)
-        print >>sys.stderr, '\nTime Elapsed: %s' % (self.stopTime-self.startTime)
+        # print('\nTime Elapsed: %s' % (self.stopTime-self.startTime), file=sys.stderr)
         return result
 
 
@@ -652,7 +656,7 @@ class HTMLTestRunner(Template_mixin):
         classes = []
         for n,t,o,e in result_list:
             cls = t.__class__
-            if not rmap.has_key(cls):
+            if not cls in rmap:
                 rmap[cls] = []
                 classes.append(cls)
             rmap[cls].append((n,t,o,e))
@@ -697,7 +701,7 @@ class HTMLTestRunner(Template_mixin):
             report = report,
             ending = ending,
         )
-        self.stream.write(output.encode('utf8'))
+        self.stream.write(output) #.encode('utf8')
 
 
     def _generate_stylesheet(self):
@@ -773,14 +777,14 @@ class HTMLTestRunner(Template_mixin):
         tmpl = has_output and self.REPORT_TEST_WITH_OUTPUT_TMPL or self.REPORT_TEST_NO_OUTPUT_TMPL
 
         # o and e should be byte string because they are collected from stdout and stderr?
-        if isinstance(o,str):
-            # TODO: some problem with 'string_escape': it escape \n and mess up formating
+        if isinstance(o,str) and hasattr(o, 'decode'):
+            # TODO: some problem with 'string_escape': it escapes \n and messes up formatting
             # uo = unicode(o.encode('string_escape'))
             uo = o.decode('latin-1')
         else:
             uo = o
-        if isinstance(e,str):
-            # TODO: some problem with 'string_escape': it escape \n and mess up formating
+        if isinstance(e,str) and hasattr(e, 'decode'):
+            # TODO: some problem with 'string_escape': it escapes \n and messes up formatting
             # ue = unicode(e.encode('string_escape'))
             ue = e.decode('latin-1')
         else:
