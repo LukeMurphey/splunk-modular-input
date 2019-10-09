@@ -1,7 +1,11 @@
 
 import re
 import os
-from urlparse import urlparse
+
+try:
+    from urlparse import urlparse
+except:
+    from urllib.parse import urlparse
 
 from .exceptions import FieldValidationException
 from .universal_forwarder_compatiblity import UF_MODE, make_splunkhome_path
@@ -198,7 +202,6 @@ class ListField(Field):
         # Trim the values if requested
         if self.trim_values:
             values_list = [value.strip() for value in values_list]
-            print values_list
 
         # If we have no instances class, then just return the plain list
         if self.instance_class is None:
@@ -705,6 +708,17 @@ class IPNetworkField(Field):
         Field.to_python(self, value, session_key)
 
         if value is not None:
+            # Convert the incoming string to bytes
+            # For Python 2, str works fine since it is just bytes. Python 3 defaults to unicode which needs to be converted.
+            try:
+                unicode
+                if not isinstance(value, unicode):
+                    value = unicode(value)
+                # The interpreter is Python 2
+            except NameError:
+                # The interpreter is Python 3, it is unicode already
+                pass
+            
             try:
                 return ip_network(value, strict=False)
             except ValueError as exception:

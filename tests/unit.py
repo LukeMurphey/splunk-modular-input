@@ -278,6 +278,11 @@ class TestIPNetworkField(unittest.TestCase):
                        [True, "1111:2222:3333:4444:5555:6666:7777::"]]
 
         for test_value in test_values:
+            try:
+                unicode
+            except:
+                unicode = str
+
             if test_value[0] is False:
                 with self.assertRaises(FieldValidationException):
                     self.field.to_python(unicode(test_value[1]))
@@ -317,7 +322,7 @@ class TestDomainNameField(unittest.TestCase):
             if test_value[0] is False:
                 with self.assertRaises(FieldValidationException):
                     self.field.to_python(test_value[1])
-                    print "Exception not raised for:", test_value[1]
+                    print("Exception not raised for:", test_value[1])
             else:
                 self.field.to_python(test_value[1])
 
@@ -557,4 +562,6 @@ if __name__ == '__main__':
         test_runner = HTMLTestRunner.HTMLTestRunner(
             stream=report_file
         )
-        unittest.main(testRunner=test_runner)
+        # unittest.main(testRunner=test_runner)
+
+        unittest.main()

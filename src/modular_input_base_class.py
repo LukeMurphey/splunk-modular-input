@@ -278,6 +278,12 @@ class ModularInput():
 
         for k, v in data_dict.items():
 
+            # Substitute basestring on Python 3
+            try:
+                basestring
+            except NameError:
+                basestring = str
+
             # If the value is a list, then write out each matching value with the same name (as mv)
             if isinstance(v, list) and not isinstance(v, basestring):
                 values = v
@@ -1101,7 +1107,7 @@ class ModularInput():
         input = None
 
         try:
-            input = cls()
+            input = cls({})
             input.execute()
             sys.exit(0)
         except Exception as e:
