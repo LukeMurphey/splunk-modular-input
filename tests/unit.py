@@ -4,8 +4,7 @@ import errno
 import sys
 import os
 import re
-import HTMLTestRunner
-
+# import HTMLTestRunner
 
 sys.path.append(os.path.join("..", "tmp", "packages", "modular_input.zip"))
 from modular_input.universal_forwarder_compatiblity import UF_MODE, make_splunkhome_path, normalizeBoolean
@@ -559,9 +558,11 @@ if __name__ == '__main__':
             raise
 
     with open(report_path, 'w') as report_file:
+        """
         test_runner = HTMLTestRunner.HTMLTestRunner(
             stream=report_file
         )
-        # unittest.main(testRunner=test_runner)
+        unittest.main(testRunner=test_runner)
+        """
 
         unittest.main()
