@@ -18,7 +18,7 @@ from .exceptions import FieldValidationException
 from .fields import Field, BooleanField
 from .server_info import ServerInfo
 
-class ModularInputConfig():
+class ModularInputConfig(object):
     """
     This class represents the configuration related to a running modular input.
     """
@@ -112,7 +112,7 @@ class ModularInputConfig():
         return ModularInputConfig(server_host, server_uri, session_key, checkpoint_dir,
                                   configuration)
 
-class ModularInput():
+class ModularInput(object):
     """
     This class functions as a base-class for modular inputs.
     """
