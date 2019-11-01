@@ -13,7 +13,7 @@ import os
 # forwarder (since it doesn't include Python). We will proceed but will be unable to access
 # Splunk's endpoints via simple request which means we will not able to load secure credentials.
 try:
-    from splunk.appserver.mrsparkle.lib.util import make_splunkhome_path as core_make_splunkhome_path
+    from splunk.clilib.bundle_paths import make_splunkhome_path as core_make_splunkhome_path
     from splunk.util import normalizeBoolean as core_normalizeBoolean
     UF_MODE = False
 except:
