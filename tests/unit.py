@@ -11,6 +11,7 @@ from modular_input.universal_forwarder_compatiblity import UF_MODE, make_splunkh
 from modular_input.fields import IPNetworkField, ListField, DomainNameField, MultiValidatorField, DurationField, WildcardField, RangeField
 from modular_input.exceptions import FieldValidationException
 from modular_input.server_info import ServerInfo
+from modular_input import ModularInput
 
 def runOnlyIfSplunkPython(func):
     """
@@ -44,6 +45,28 @@ def runOnlyIfSystemPython(func):
 
 def runOnlyIfSplunkIsRunning(func):
     pass
+
+class TestModularInputBaseClass(unittest.TestCase):
+    """
+    Test the universal forwarder module that provides some generic helpers in case Splunk's
+    libraries are not available (like on Universal Forwarders which lack Splunk's Python).
+    """
+
+    @runOnlyIfSplunkPython
+    def test_constructor_(self):
+        """
+        Make sure that the scheme args are accepted properly.
+        """
+
+        mod_input = ModularInput({
+            "use_single_instance" : False,
+        })
+        self.assertEquals(mod_input.use_single_instance, False)
+
+        mod_input = ModularInput({
+            "use_single_instance" : True,
+        })
+        self.assertEquals(mod_input.use_single_instance, True)
 
 class TestUniversalForwarder(unittest.TestCase):
     """

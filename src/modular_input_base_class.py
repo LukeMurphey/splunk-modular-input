@@ -376,7 +376,10 @@ class ModularInput(object):
             "use_single_instance" : True
         }
 
-        scheme_args = dict(default_scheme_args.items() + scheme_args.items())
+        merged_args = {}
+        merged_args.update(default_scheme_args)
+        merged_args.update(scheme_args)
+        scheme_args = merged_args
 
         # Set the scheme arguments.
         for arg in scheme_args:
