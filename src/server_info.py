@@ -5,8 +5,7 @@ from .universal_forwarder_compatiblity import UF_MODE
 from .shortcuts import forgive_splunkd_outages
 
 if not UF_MODE:
-    import splunk
-
+    from splunk.rest import simpleRequest
 class ServerInfo(object):
     """
     This class returns information about the Splunk server that is running this code.
@@ -33,7 +32,7 @@ class ServerInfo(object):
             return cls.server_info
 
         # Get the server info
-        _, server_content = splunk.rest.simpleRequest('/services/server/info/server-info?output_mode=json', sessionKey=session_key)
+        _, server_content = simpleRequest('/services/server/info/server-info?output_mode=json', sessionKey=session_key)
 
         info_content = json.loads(server_content)
         cls.server_info = info_content['entry'][0]
@@ -64,7 +63,7 @@ class ServerInfo(object):
 
         # Get the shc cluster info
         try:
-            response, server_content = splunk.rest.simpleRequest('/services/shcluster/status?output_mode=json', sessionKey=session_key)
+            response, server_content = simpleRequest('/services/shcluster/status?output_mode=json', sessionKey=session_key)
 
             # If we get a 200 code then this is using SHC
             if response.status == 200:
@@ -102,7 +101,7 @@ class ServerInfo(object):
 
         # Get the shc cluster info
         try:
-            response, _ = splunk.rest.simpleRequest('/services/shcluster/status?output_mode=json', sessionKey=session_key)
+            response, _ = simpleRequest('/services/shcluster/status?output_mode=json', sessionKey=session_key)
 
             # If we get a 200 code then this is using SHC
             if response.status == 200:

@@ -7,7 +7,7 @@ import time
 from .universal_forwarder_compatiblity import UF_MODE
 
 if not UF_MODE:
-    import splunk
+    from splunk import SplunkdConnectionException
 
 def forgive_splunkd_outages(function):
     """
@@ -29,7 +29,7 @@ def forgive_splunkd_outages(function):
         while attempts_tried < attempts:
             try:
                 return function(*args, **kwargs)
-            except splunk.SplunkdConnectionException:
+            except SplunkdConnectionException:
 
                 # Sleep for a bit in order to let Splunk recover in case this is a temporary issue
                 time.sleep(attempt_delay)

@@ -14,7 +14,8 @@ from .universal_forwarder_compatiblity import UF_MODE
 from .shortcuts import forgive_splunkd_outages
 
 if not UF_MODE:
-    import splunk
+    from splunk import ResourceNotFound
+    from splunk.rest import simpleRequest
 
 def escape_colons(string_to_escape):
     """
@@ -51,8 +52,8 @@ def get_secure_password(realm, username=None, session_key=None, logger=None):
     # Get secure password
     stanza = get_secure_password_stanza(username, realm)
     try:
-        server_response, server_content = splunk.rest.simpleRequest('/services/storage/passwords/' + urllib.quote_plus(stanza) + '?output_mode=json&count=0', sessionKey=session_key)
-    except splunk.ResourceNotFound:
+        server_response, server_content = simpleRequest('/services/storage/passwords/' + urllib.quote_plus(stanza) + '?output_mode=json&count=0', sessionKey=session_key)
+    except ResourceNotFound:
         return None
 
     if server_response['status'] == '404':
@@ -72,7 +73,7 @@ def get_secure_password_by_realm(realm, session_key):
     """
 
     # Get secure passwords
-    server_response, server_content = splunk.rest.simpleRequest('/services/storage/passwords?output_mode=json&count=0', sessionKey=session_key)
+    server_response, server_content = simpleRequest('/services/storage/passwords?output_mode=json&count=0', sessionKey=session_key)
 
     if server_response['status'] != '200':
         raise Exception("Could not get the secure passwords")
