@@ -820,6 +820,9 @@ class ModularInput(object):
         stanza -- The stanza of the input being used
         """
 
+        if sys.version_info.major >= 3 and isinstance(stanza, str):
+            stanza = stanza.encode('utf-8')
+
         return os.path.join(checkpoint_dir, hashlib.sha224(stanza).hexdigest() + ".json")
 
     @classmethod
