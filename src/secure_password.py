@@ -8,7 +8,11 @@ The two main functions that you may want to use are:
 """
 
 import json
-import urllib
+
+try:
+    from urllib import quote_plus
+except:
+    from urllib.parse import quote_plus
 
 from .universal_forwarder_compatiblity import UF_MODE
 from .shortcuts import forgive_splunkd_outages
@@ -52,7 +56,7 @@ def get_secure_password(realm, username=None, session_key=None, logger=None):
     # Get secure password
     stanza = get_secure_password_stanza(username, realm)
     try:
-        server_response, server_content = simpleRequest('/services/storage/passwords/' + urllib.quote_plus(stanza) + '?output_mode=json&count=0', sessionKey=session_key)
+        server_response, server_content = simpleRequest('/services/storage/passwords/' + quote_plus(stanza) + '?output_mode=json&count=0', sessionKey=session_key)
     except ResourceNotFound:
         return None
 
@@ -84,7 +88,7 @@ def get_secure_password_by_realm(realm, session_key):
     # Filter down output to the ones matching the realm
     matching_passwords = filter(lambda x: x['content']['realm'] == realm, passwords)
 
-    if len(matching_passwords) > 0:
-        return matching_passwords[0]
-    else:
-        return None
+    for matching_passwords in matching_passwords:
+        return matching_passwords
+
+    return None
