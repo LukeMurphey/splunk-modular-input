@@ -546,13 +546,14 @@ class TestServerInfo(LiveSplunkTestCase):
     @runOnlyIfSplunkPython
     def test_is_shc_enabled(self):
         if self.username is not None and self.password is not None:
-            import splunk
+            from splunk.auth import getSessionKey
+            from splunk import SplunkdConnectionException
             try:
-                session_key = splunk.auth.getSessionKey(username=self.username, password=self.password)
+                session_key = getSessionKey(username=self.username, password=self.password)
 
                 # This assumes you are testing against a non-SHC environment
                 self.assertFalse(ServerInfo.is_on_shc(session_key))
-            except splunk.SplunkdConnectionException:
+            except SplunkdConnectionException:
                 pass
         else:
             self.skipTest('Skipping test since Splunk authentication data is not available')
@@ -560,13 +561,14 @@ class TestServerInfo(LiveSplunkTestCase):
     @runOnlyIfSplunkPython
     def test_is_shc_captain(self):
         if self.username is not None and self.password is not None:
-            import splunk
+            from splunk.auth import getSessionKey
+            from splunk import SplunkdConnectionException
             try:
-                session_key = splunk.auth.getSessionKey(username=self.username, password=self.password)
+                session_key = getSessionKey(username=self.username, password=self.password)
 
                 # This assumes you are testing against a non-SHC environment
                 self.assertEqual(ServerInfo.is_shc_captain(session_key), None)
-            except splunk.SplunkdConnectionException:
+            except SplunkdConnectionException:
                 pass
         else:
             self.skipTest('Skipping test since Splunk authentication data is not available')

@@ -6,6 +6,8 @@ from .shortcuts import forgive_splunkd_outages
 
 if not UF_MODE:
     from splunk.rest import simpleRequest
+    from splunk import ResourceNotFound, LicenseRestriction
+
 class ServerInfo(object):
     """
     This class returns information about the Splunk server that is running this code.
@@ -74,11 +76,11 @@ class ServerInfo(object):
             else:
                 cls.shc_enabled = False
 
-        except splunk.ResourceNotFound:
+        except ResourceNotFound:
             # This shouldn't generate a 404 from what I can tell but if it does then I would say
             # SHC is disabled
             cls.shc_enabled = False
-        except splunk.LicenseRestriction:
+        except LicenseRestriction:
             # This host may be using the dev license
             cls.shc_enabled = False
 
@@ -108,11 +110,11 @@ class ServerInfo(object):
                 cls.shc_enabled = True
             else:
                 cls.shc_enabled = False
-        except splunk.ResourceNotFound:
+        except ResourceNotFound:
             # This shouldn't generate a 404 from what I can tell but if it does then I would say
             # SHC is disabled
             cls.shc_enabled = False
-        except splunk.LicenseRestriction:
+        except LicenseRestriction:
             # This host may be using the dev license
             cls.shc_enabled = False
 
