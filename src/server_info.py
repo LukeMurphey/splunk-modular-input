@@ -121,6 +121,17 @@ class ServerInfo(object):
         return cls.shc_enabled
 
     @classmethod
+    def is_fips_mode(cls, session_key):
+        """
+        Determine if the app is running in FIPS mode. This means that weaker hash algorithms need to
+        be disabled. Attempting to use these weaker hash algorithms will cause OpenSSL to to crash,
+        taking down the entire Python process.
+        """
+
+        server_info = cls.get_server_info(session_key)
+        return server_info['content'].get('fips_mode', None) in [1, '1']
+
+    @classmethod
     def get_dict_object(cls, dict, keys, default_value=None):
         """
         Get the object with the given set of nested dictionaries with the given name. If the item

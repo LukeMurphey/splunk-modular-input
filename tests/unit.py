@@ -573,6 +573,22 @@ class TestServerInfo(LiveSplunkTestCase):
         else:
             self.skipTest('Skipping test since Splunk authentication data is not available')
 
+    @runOnlyIfSplunkPython
+    def test_is_fips_mode(self):
+        if self.username is not None and self.password is not None:
+            from splunk.auth import getSessionKey
+            from splunk import SplunkdConnectionException
+            try:
+                session_key = getSessionKey(username=self.username, password=self.password)
+
+                # This assumes you are testing against a non-FIPS environment
+                self.assertEqual(ServerInfo.is_fips_mode(session_key), False)
+            except SplunkdConnectionException:
+                pass
+        else:
+            self.skipTest('Skipping test since Splunk authentication data is not available')
+
+
 if __name__ == '__main__':
     report_path = os.path.join('..', os.environ.get('TEST_OUTPUT', 'tmp/test_report.html'))
 
