@@ -125,7 +125,8 @@ class ModularInput(object):
         Field("sourcetype", "Stanza name", "The name of the stanza for this modular input", empty_allowed=True, none_allowed=True),
         Field("index", "Index", "The index that data should be sent to", empty_allowed=True, none_allowed=True),
         Field("host", "Host", "The host that is running the input", empty_allowed=True),
-        BooleanField("disabled", "Disabled", "Whether the modular input is disabled or not", empty_allowed=True)
+        BooleanField("disabled", "Disabled", "Whether the modular input is disabled or not", empty_allowed=True),
+        Field("python.version", "Python Version", "The Python version that the code runs on", empty_allowed=True)
     ]
 
     title = 'No title was provided'
