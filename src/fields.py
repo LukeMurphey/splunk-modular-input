@@ -9,7 +9,12 @@ except:
 
 from .exceptions import FieldValidationException
 from .universal_forwarder_compatiblity import UF_MODE, make_splunkhome_path
-from ipaddress import ip_network
+
+try:
+    from ipaddress import ip_network
+except ImportError:
+    # Old Python 2 import (for system Python)
+    from .contrib.ipaddress import ip_network
 
 try:
     from .server_info import ServerInfo
