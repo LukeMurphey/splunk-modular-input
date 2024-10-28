@@ -31,4 +31,4 @@ jobs:
         ant
     - name: Test
       run: |
-        ant test
+        ant test_with_system_python
